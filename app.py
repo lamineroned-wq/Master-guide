@@ -118,12 +118,6 @@ except:
 
 st.write("---")
 
-    unsafe_allow_html=True
-)
-
-# تفعيل محرك الذكاء الاصطناعي (Gemini) - تأكد من إدراج مفتاح الـ API الحر والصحيح هنا
-GOOGLE_API_KEY = "AQ.Ab8RN6Ix5-y9wkHP6wTz1Uuwe_rb00L30Z-wGZKOmuo9qPYDiw" 
-genai.configure(api_key=GOOGLE_API_KEY)
 
 # =========================================================================
 # 4. توليد بطاقة العضوية التلقائية الآمنة (قراءة آلية لبيانات الزبون)
