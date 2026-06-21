@@ -145,47 +145,43 @@ if st.button("إظهار بطاقتي الرسمية الموثقة"):
     )
 
 # =========================================================================
-# 5. عرض قائمة المحلات والأرقام مع الفلترة المزدوجة (الولاية + الصنف)
+# 5. عرض قائمة المحلات والأرقام مع الفلترة المزدوجة والتنظيف
 # =========================================================================
 st.write("---")
 st.write("### 📍 دليل الخدمات والمحلات التجارية المعتمدة")
 
 try:
-    # قراءة قاعدة البيانات المحدثة
     df = pd.read_csv("stores.csv")
     
-    # إنشاء خانتين للبحث بجانب بعضهما بشكل أنيق
     col_filter1, col_filter2 = st.columns(2)
     
     with col_filter1:
-        # 1. خانة اختيار الولاية
         selected_state = st.selectbox("اختر الولاية تصفية النتائج:", ["الكل"] + list(df["الولاية"].unique()))
         
     with col_filter2:
-        # 2. خانة اختيار الصنف
-      # مسح القيم الفارغة وتنظيف القائمة قبل عرضها للزبون
-categories = [cat for cat in df["الصنف"].dropna().unique() if str(cat).strip() != ""]
-selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(categories))
+        # حساب التصفية وتنظيف الأسطر بالمسافات البرمجية الصحيحة 100%
+        if "الصنف" in df.columns:
+            categories = [c for c in df["الصنف"].dropna().unique() if str(c).strip() != ""]
+        else:
+            categories = []
+        selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(categories))
 
-
-
-    # تطبيق الفلترة الذكية بناءً على الخيارات المحددة
     filtered_df = df.copy()
     
     if selected_state != "الكل":
         filtered_df = filtered_df[filtered_df["الولاية"] == selected_state]
         
-    if selected_category != "الكل":
+    if "الصنف" in filtered_df.columns and selected_category != "الكل":
         filtered_df = filtered_df[filtered_df["الصنف"] == selected_category]
 
-    # عرض النتائج المفلترة للزبون
     if not filtered_df.empty:
         for index, row in filtered_df.iterrows():
+            current_cat = row['الصنف'] if 'الصنف' in df.columns else 'عام'
             st.markdown(
                 f"""
                 <div class="store-card">
                     <h3 style="color: #008751; margin-top: 0;">🏢 {row['الاسم']}</h3>
-                    <p style="color: #333; margin: 5px 0;">📍 <b>الولاية:</b> {row['الولاية']} | 🛠️ <b>الصنف:</b> <span style="color:#D21034; font-weight:bold;">{row['الصنف']}</span></p>
+                    <p style="color: #333; margin: 5px 0;">📍 <b>الولاية:</b> {row['الولاية']} | 🛠️ <b>الصنف:</b> <span style="color:#D21034; font-weight:bold;">{current_cat}</span></p>
                     <p style="color: #333; margin: 5px 0;">📞 <b>رقم الهاتف:</b> <a class="phone-btn" href="tel:{row['Telephone']}">📱 {row['Telephone']}</a></p>
                     <p style="margin-top: 10px;">🗺️ <b><a href="{row['Location']}" target="_blank" style="color: #D21034; text-decoration: underline;">فتح الموقع على خرائط Google Maps</a></b></p>
                 </div>
