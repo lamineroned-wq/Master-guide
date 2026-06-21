@@ -85,11 +85,11 @@ if not st.session_state["authenticated"]:
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 3. واجهة الدليل بعد الدخول الناجح (تحديث: حل مشكلة ظهور الصور والشعار)
+# 3. واجهة الدليل بعد الدخول الناجح (تحديث: مطابقة أسماء الصور الحقيقية)
 # =========================================================================
 st.set_page_config(page_title="Master 3 Algérie", layout="wide")
 
-# إنشاء أعمدة لتنظيم الواجهة العلوية (الشعار على اليمين والعنوان بجانبه)
+# إنشاء أعمدة لتنظيم الواجهة العلوية (العنوان والشعار بجانبه)
 col_title, col_logo = st.columns([4, 1])
 
 with col_title:
@@ -104,17 +104,16 @@ with col_title:
     )
 
 with col_logo:
-    # قراءة وعرض الشعار بطريقة المطورين الرسمية الآمنة
     import os
-    if os.path.exists("logo.png"):
-        st.image("logo.png", width=90)
+    # قراءة الصورة Wallpaper_01.png كشعار للتطبيق
+    if os.path.exists("Wallpaper_01.png"):
+        st.image("Wallpaper_01.png", width=90)
 
-# عرض صورة الغلاف العريض (Banner) الممتد لكامل الشاشة بطريقة العرض الحديثة
-if os.path.exists("banner.png"):
-    st.image("banner.png", width="stretch")
+# عرض صورة الغلاف العريض p042391jpg الممتد لكامل الشاشة
+if os.path.exists("p042391jpg"):
+    st.image("p042391jpg", use_container_width=True)
 
 st.write("---")
-
 
 
 # =========================================================================
