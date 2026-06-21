@@ -85,16 +85,39 @@ if not st.session_state["authenticated"]:
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 3. واجهة الدليل بعد الدخول الناجح
+# 3. واجهة الدليل بعد الدخول الناجح (تحديث: إضافة الشعار وصورة الواجهة)
 # =========================================================================
 st.set_page_config(page_title="Master 3 Algérie", layout="wide")
-st.markdown(
-    f"""
-    <div style='background-color: #008751; padding: 20px; border-radius: 10px; text-align: center;'>
-        <h1 style='color: white; margin: 0; font-size: 24px;'>📱 دليل Master 3 Algérie الرقمي</h1>
-        <p style='color: #f8f9fa; margin: 5px 0 0 0;'>مرحباً بك: {current_user['full_name']} | المركبة الموثقة: {current_user['car_type']}</p>
-    </div>
-    """, 
+
+# إنشاء عمودين في الأعلى: واحد للشعار وواحد لعنوان التطبيق
+col_logo, col_title = st.columns([1, 4])
+
+with col_logo:
+    try:
+        # عرض الشعار في زاوية الشاشة بشكل دائري وأنيق
+        st.image("logo.png", width=100)
+    except:
+        pass # في حال لم يتم رفع الصورة بعد، يتخطى الكود الخطأ تلقائياً
+
+with col_title:
+    st.markdown(
+        f"""
+        <div style='text-align: right; padding-top: 10px;'>
+            <h1 style='color: #008751; margin: 0; font-size: 28px;'>📱 دليل Master 3 Algérie الرقمي</h1>
+            <p style='color: #555; margin: 5px 0 0 0;'>مرحباً بك: {current_user['full_name']} | المركبة الموثقة: {current_user['car_type']}</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+
+# عرض صورة الواجهة العريضة (Banner) كفاصل إعلاني فخم تحت الترويسة
+try:
+    st.image("banner.png", use_container_width=True)
+except:
+    pass
+
+st.write("---")
+
     unsafe_allow_html=True
 )
 
