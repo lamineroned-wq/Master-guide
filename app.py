@@ -145,33 +145,55 @@ if st.button("إظهار بطاقتي الرسمية الموثقة"):
     )
 
 # =========================================================================
-# 5. عرض قائمة المحلات والأرقام التفاعلية من ملف stores.csv الخارجي
+# 5. عرض قائمة المحلات والأرقام مع الفلترة المزدوجة (الولاية + الصنف)
 # =========================================================================
 st.write("---")
-st.write("### 📍 محطات الخدمات والمحلات التجارية المعتمدة")
-try:
-    df = pd.read_csv("stores.csv")
-    search_query = st.selectbox("اختر الولاية لتصفية المحلات:", ["الكل"] + list(df["الولاية"].unique()))
-    
-    if search_query != "الكل":
-        filtered_df = df[df["الولاية"] == search_query]
-    else:
-        filtered_df = df
+st.write("### 📍 دليل الخدمات والمحلات التجارية المعتمدة")
 
-    for index, row in filtered_df.iterrows():
-        st.markdown(
-            f"""
-            <div class="store-card">
-                <h3 style="color: #008751; margin-top: 0;">🏢 {row['الاسم']}</h3>
-                <p style="color: #333; margin: 5px 0;">📍 <b>الولاية:</b> {row['الولاية']}</p>
-                <p style="color: #333; margin: 5px 0;">📞 <b>رقم الهاتف:</b> <a class="phone-btn" href="tel:{row['Telephone']}">📱 {row['Telephone']}</a></p>
-                <p style="margin-top: 10px;">🗺️ <b><a href="{row['Location']}" target="_blank" style="color: #D21034; text-decoration: underline;">فتح الموقع على خرائط Google Maps</a></b></p>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
+try:
+    # قراءة قاعدة البيانات المحدثة
+    df = pd.read_csv("stores.csv")
+    
+    # إنشاء خانتين للبحث بجانب بعضهما بشكل أنيق
+    col_filter1, col_filter2 = st.columns(2)
+    
+    with col_filter1:
+        # 1. خانة اختيار الولاية
+        selected_state = st.selectbox("اختر الولاية تصفية النتائج:", ["الكل"] + list(df["الولاية"].unique()))
+        
+    with col_filter2:
+        # 2. خانة اختيار الصنف
+        selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(df["الصنف"].unique()))
+
+    # تطبيق الفلترة الذكية بناءً على الخيارات المحددة
+    filtered_df = df.copy()
+    
+    if selected_state != "الكل":
+        filtered_df = filtered_df[filtered_df["الولاية"] == selected_state]
+        
+    if selected_category != "الكل":
+        filtered_df = filtered_df[filtered_df["الصنف"] == selected_category]
+
+    # عرض النتائج المفلترة للزبون
+    if not filtered_df.empty:
+        for index, row in filtered_df.iterrows():
+            st.markdown(
+                f"""
+                <div class="store-card">
+                    <h3 style="color: #008751; margin-top: 0;">🏢 {row['الاسم']}</h3>
+                    <p style="color: #333; margin: 5px 0;">📍 <b>الولاية:</b> {row['الولاية']} | 🛠️ <b>الصنف:</b> <span style="color:#D21034; font-weight:bold;">{row['الصنف']}</span></p>
+                    <p style="color: #333; margin: 5px 0;">📞 <b>رقم الهاتف:</b> <a class="phone-btn" href="tel:{row['Telephone']}">📱 {row['Telephone']}</a></p>
+                    <p style="margin-top: 10px;">🗺️ <b><a href="{row['Location']}" target="_blank" style="color: #D21034; text-decoration: underline;">فتح الموقع على خرائط Google Maps</a></b></p>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
+    else:
+        st.warning("⚠️ عذراً، لا توجد نتائج مطابقة للبحث في هذه الولاية بهذا الصنف حالياً.")
+
 except Exception as e:
-    st.info("جاري تحديث قاعدة بيانات المحلات والأرقام حالياً...")
+    st.info("جاري تحديث وتأمين قاعدة بيانات المحلات والأصناف حالياً...")
+
 
 # =========================================================================
 # 6. قسم المستشار الذكي
