@@ -110,8 +110,8 @@ with col_logo:
         st.image("Wallpaper_01.png", width=90)
 
 # عرض صورة الغلاف العريض p042391jpg الممتد لكامل الشاشة
-if os.path.exists("p042391jpg"):
-    st.image("p042391jpg", use_container_width=True)
+if os.path.exists("p042391.jpg"):
+    st.image("p042391.jpg", use_container_width=True)
 
 st.write("---")
 
