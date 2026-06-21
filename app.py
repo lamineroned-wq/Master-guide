@@ -163,7 +163,8 @@ try:
         
     with col_filter2:
         # 2. خانة اختيار الصنف
-        selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(df["الصنف"].unique()))
+       selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(df["الصنف"].unique()))
+
 
     # تطبيق الفلترة الذكية بناءً على الخيارات المحددة
     filtered_df = df.copy()
