@@ -163,7 +163,10 @@ try:
         
     with col_filter2:
         # 2. خانة اختيار الصنف
-       selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(df["الصنف"].unique()))
+      # مسح القيم الفارغة وتنظيف القائمة قبل عرضها للزبون
+categories = [cat for cat in df["الصنف"].dropna().unique() if str(cat).strip() != ""]
+selected_category = st.selectbox("اختر الصنف المرجو البحث عنه:", ["الكل"] + list(categories))
+
 
 
     # تطبيق الفلترة الذكية بناءً على الخيارات المحددة
