@@ -30,7 +30,7 @@ if not st.session_state["authenticated"]:
 st.set_page_config(page_title="Master 3 Algérie", layout="wide")
 st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>📱 دليل Master 3 Algérie الرقمي والتفاعلي</h1>", unsafe_allow_html=True)
 # 4. ربط وتفعيل محرك الذكاء الاصطناعي (Gemini) المخصص والمقيد
-GOOGLE_API_KEY = "ضع_مفتاح_API_الخاص_بك_هنا" # استبدله بمفتاحك الحقيقي
+GOOGLE_API_KEY = "AQ.Ab8RN6LkDDFiSlYUOipi9r8rhMvTNYsjsxAwB_JteVox6nQYaQ"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.write("---")
