@@ -57,7 +57,17 @@ st.markdown(
 )
 
 # =========================================================================
-# 2. بوابة الدخول الذكية والآمنة (users.csv)
+# 2. إعدادات واجهة التطبيق الاحترافية (الأيقونة الرسمية SOS + الاسم)
+# =========================================================================
+st.set_page_config(
+    page_title="SOS Road Assistance", 
+    page_icon="🚨", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =========================================================================
+# 3. بوابة الدخول الذكية والآمنة (users.csv)
 # =========================================================================
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -91,18 +101,14 @@ if not st.session_state["authenticated"]:
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 3. إعدادات واجهة التطبيق الاحترافية (تحديث: الأيقونة الرسمية SOS + الاسم)
+# 4. إعداد العداد التلقائي (Auto-Refresh) كل 30 ثانية
 # =========================================================================
-# وضَعنا أيقونة سيارة الإسعاف/الطوارئ الرسمية 🚨 لتظهر في أعلى علامة تبويب المتصفح لدى الزبون
-st.set_page_config(
-    page_title="SOS Road Assistance", 
-    page_icon="🚨", 
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+refresh_count = st_autorefresh(interval=30000, key="sos_autorefresh")
+if refresh_count > 0:
+    st.toast("🔄 تم تحديث الرادار الحركي ومواقع شاحنات السحب...", icon="📡")
 
 # =========================================================================
-# 4. الشريط الجانبي الفخم (Sidebar) لإدارة الحساب وزر تسجيل الخروج
+# 5. الشريط الجانبي (Sidebar) لإدارة العضوية والبطاقة والروج
 # =========================================================================
 with st.sidebar:
     st.markdown("<h2 style='text-align: center; color: #D21034;'>⚙️ لوحة التحكم</h2>", unsafe_allow_html=True)
@@ -111,7 +117,7 @@ with st.sidebar:
     st.write(f"**📅 نهاية التغطية:** {current_user['expiry_date']}")
     st.write("---")
     
-    # ميزة استخراج بطاقة العضوية الإلكترونية داخل الشريط الجانبي
+    # ميزة استخراج بطاقة العضوية الإلكترونية الموزونة بالمسافات الصحيحة
     if st.button("🪪 إظهار بطاقة العضوية الرقمية"):
         member_code = f"SOS-{current_user['username'].upper()}"
         barcode_url = f"https://metafloor.com{member_code}&scale=3&rotate=N&includetext=true"
@@ -130,32 +136,40 @@ with st.sidebar:
         )
     
     st.write("---")
-    # ميزة زر تسجيل الخروج الآمن لحماية الحساب من البقاء مفتوحاً
+    # زر تسجيل الخروج الآمن الموزون بالكامل
     if st.button("🚪 تسجيل الخروج من النظام"):
         st.session_state["authenticated"] = False
         st.session_state["user_data"] = {}
-        st.toast("تم تسجيل الخروج بنجاح. رافقتكم السلامة!", icon="🔒")
         st.rerun()
 
-
 # =========================================================================
-# 5. الواجهة الرئيسية: خريطة التتبع الرادارية الكبرى (SOS Map)
+# 6. الواجهة الرئيسية: خريطة التتبع الرادارية الكبرى (SOS Map)
 # =========================================================================
-st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الحية بالطرقات</h2>", unsafe_allow_html=True)
-st.write("يقوم النظام بفحص موقعك ومزامنة أقرب شاحنات السحب (الـ Dépannage) والميكانيكيين المتنقلين تلقائياً.")
+import os
+# عرض الصور إذا تواجدت في المستودع
+col_title, col_logo = st.columns([4, 1])
+with col_title:
+    st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الحية بالطرقات</h2>", unsafe_allow_html=True)
+    st.write("يقوم النظام بمزامنة أقرب شاحنات السحب (الـ Dépannage) والميكانيكيين المتنقلين تلقائياً.")
+with col_logo:
+    if os.path.exists("Wallpaper_01.png"):
+        st.image("Wallpaper_01.png", width=80)
 
-# إحداثيات موقع السائق الافتراضية
+if os.path.exists("p042391jpg"):
+    with open("p042391jpg", "rb") as file:
+        st.image(file.read(), use_container_width=True)
+
+# إحداثيات موقع السائق الافتراضية للجزائر
 user_lat, user_lon = 36.7528, 3.0420
 
 try:
     df = pd.read_csv("stores.csv")
-    # فرز مقدمي خدمات الإنقاذ الفوري فقط
     sos_providers = df[df["الصنف"].isin(["محطة خدمات", "ميكانيك وصيانة", "شاحنة سحب"])]
     
     # بناء الخريطة التفاعلية الفخمة
     m = folium.Map(location=[user_lat, user_lon], zoom_start=10, tiles="cartodbpositron")
     
-    # دبوس السائق (المستغيث) باللون الأحمر التنبيهي
+    # دبوس السائق (المستغيث) باللون الأحمر
     folium.Marker(
         location=[user_lat, user_lon],
         popup=f"<b>مركبة تعطلت: {current_user['full_name']}</b>",
@@ -170,14 +184,12 @@ try:
             icon=folium.Icon(color="green", icon="wrench")
         ).add_to(m)
         
-    # عرض الخريطة لتملأ شاشة السائق
     st_folium(m, width="100%", height=400, returned_objects=[])
-
 except:
     st.warning("⚠️ جاري مزامنة إحداثيات الأقمار الصناعية للخرائط الحية...")
 
 # =========================================================================
-# 6. زر الاستغاثة السريع وجدول التواصل المحمي للإنقاذ الفوري
+# 7. زر الاستغاثة السريع وجدول التواصل المحمي
 # =========================================================================
 st.write("---")
 if st.button("🔴 اضغط هنا لطلب نجدة عاجلة فوراً"):
@@ -186,7 +198,6 @@ if st.button("🔴 اضغط هنا لطلب نجدة عاجلة فوراً"):
 st.write("### 🛠️ مراكز الإنقاذ المتوفرة في نطاقك الجغرافي:")
 
 try:
-    # قائمة اختيار مزدوجة سريعة وسلسة للبحث أثناء الطوارئ
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         sel_state = st.selectbox("تصفية بالولاية:", ["كل الولايات"] + list(df["الولاية"].unique()))
@@ -198,7 +209,6 @@ try:
     if sel_state != "كل الولايات": f_df = f_df[f_df["الولاية"] == sel_state]
     if sel_cat != "كل الأصناف": f_df = f_df[f_df["الصنف"] == sel_cat]
     
-    # عرض بطاقات مزودي الخدمة بتصميم تطبيقات التتبع الحديثة
     for index, row in f_df.iterrows():
         st.markdown(
             f"""
@@ -206,21 +216,5 @@ try:
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="color: #111; margin: 0; font-size: 18px;">🚨 {row['الاسم']}</h3>
                     <span class="badge-status">🟢 متوفر للإنقاذ</span>
-                </div>
-                <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">📍 <b>النطاق:</b> {row['الولاية']} | 🛠️ <b>الخدمة:</b> {row['الصنف']}</p>
-                <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً لطلب النجدة</a>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-except:
-    pass
 
-# =========================================================================
-# 7. مستشار الطوارئ الذكي (مساعد ميكانيكي مدعوم بالذكاء الاصطناعي)
-# =========================================================================
-st.write("---")
-st.write("### 🤖 مساعد ميكانيكي ذكي للاستشارة السريعة")
-user_query = st.text_input("اكتب العطل الذي تلاحظه في سيارتك حالياً (مثال: ارتفاع حرارة المحرك، دخان أبيض):")
-if st.button("تحليل العطل الذكي"):
 
