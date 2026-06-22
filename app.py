@@ -89,38 +89,32 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# 4. الواجهة الرئيسية: خريطة رادار الطوارئ الكبرى المدمجة
+# 4. الواجهة الرئيسية: خريطة رادار الطوارئ الكبرى الأصلية (Streamlit Map)
 # =========================================================================
-st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الحية بالطرقات (SOS Map View)</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #111;'>📡 رادار الإغاثة الحية بالطرقات (SOS Map)</h2>", unsafe_allow_html=True)
 
-# قراءة البيانات لتغذية الخريطة المشتركة بالدبابيس
 try:
+    # قراءة البيانات لتغذية الخريطة المشتركة بالدبابيس
     df = pd.read_csv("stores.csv")
     
     # فلترة سريعة لتحديد النطاق الجغرافي لعرضه على الخريطة الكبرى
     sel_state = st.selectbox("اختر الولاية لتركيز الرادار الجغرافي:", list(df["الولاية"].unique()))
     f_df = df[df["الولاية"] == sel_state]
     
-    # جلب إحداثيات أول محل في الولاية المحددة لتركيز خريطة جوجل عليها تلقائياً
     if not f_df.empty:
-        center_lat = f_df.iloc[0]['latitude']
-        center_lon = f_df.iloc[0]['longitude']
+        # تجهيز البيانات بصيغة جدولية تفهمها الخريطة الأصلية للمنصة
+        # الكود يبحث عن عمودي latitude و longitude في ملف stores.csv ويرسمهما فوراً
+        map_data = pd.DataFrame({
+            'latitude': f_df['latitude'],
+            'longitude': f_df['longitude']
+        })
+        
+        # عرض الخريطة الأصلية المباشرة والمحمية التي تملأ الشاشة بنجاح
+        st.map(map_data, zoom=10, use_container_width=True)
+        st.success("📍 تظهر أمامك الآن نقاط وتمركز طواقم الإنقاذ المتاحة في هذه الولاية.")
     else:
-        center_lat, center_lon = 36.7528, 3.0420 # الجزائر العاصمة كمركز افتراضي
-
-    # توليد رابط الدمج القياسي لخرائط جوجل الكبرى (تظهر كل المحلات في النطاق)
-    google_embed_url = f"https://google.com{center_lat},{center_lon}&z=10&output=embed"
-    
-    # حقن الخريطة التفاعلية الكبرى لتشغل الواجهة بالكامل بصرياً
-    st.markdown(
-        f"""
-        <div class="map-container">
-            <iframe src="{google_embed_url}" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
+        st.warning("⚠️ لا توجد طواقم مسجلة في هذه الولاية حالياً.")
+        
     # عرض لوحة عائمة أسفل الخريطة بأسماء وأرقام الهواتف التفاعلية لسرعة الاتصال
     st.markdown("<div class='emergency-panel'><h4>🛠️ طواقم الإنقاذ وشاحنات السحب المتوفرة في هذا النطاق:</h4></div>", unsafe_allow_html=True)
     
@@ -128,9 +122,10 @@ try:
         with st.expander(f"🚨 {row['الاسم']} ({row['الصنف']})", expanded=True):
             st.write(f"📞 **رقم الاتصال السريع:** {row['Telephone']}")
             st.markdown(f"<a href='tel:{row['Telephone']}' style='background-color:#008751; color:white; padding:8px 25px; border-radius:20px; text-decoration:none; font-weight:bold; display:inline-block;'>📞 اطلب النجدة فوراً</a>", unsafe_allow_html=True)
+            st.markdown(f"[🗺️ فتح في تطبيق الخرائط الخارجي (Google Maps)]({row['Location']})")
 
 except Exception as e:
-    st.info("جاري مزامنة رادار الخرائط الرقمية حالياً...")
+    st.info("جاري مزامنة رادار الخرائط الرقمية وتأمين الاتصال بالأقمار الصناعية...")
 
 # =========================================================================
 # 5. مستشار الطوارئ الفني (AI Mechanic)
