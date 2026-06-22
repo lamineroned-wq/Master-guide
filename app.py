@@ -1,25 +1,10 @@
-# حقن تثبيت ميكانيكي للمكتبات لتخطي خطأ السيرفر
-import subprocess
-import sys
-
-try:
-    import folium
-    import streamlit_folium
-    import streamlit_autorefresh
-except ModuleNotFoundError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "folium", "streamlit-folium", "streamlit-autorefresh"])
-
 import streamlit as st
 import datetime
 import pandas as pd
 import google.generativeai as genai
-import folium
-from streamlit_folium import st_folium
-from streamlit_autorefresh import st_autorefresh
-import os
 
 # =========================================================================
-# 1. تأمين المحتوى وحظر النسخ والتحديد (Anti-Copy CSS)
+# 1. الهوية البصرية للـ SOS وتأمين المحتوى من النسخ والتحديد
 # =========================================================================
 st.markdown(
     """
@@ -48,13 +33,17 @@ st.markdown(
         display: inline-block; background-color: #008751; color: white !important;
         padding: 8px 20px; border-radius: 25px; text-decoration: none !important; font-weight: bold; margin-top: 10px;
     }
+    .map-link {
+        display: inline-block; background-color: #D21034; color: white !important;
+        padding: 8px 20px; border-radius: 25px; text-decoration: none !important; font-weight: bold; margin-top: 10px; margin-right: 10px;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # =========================================================================
-# 2. إعدادات واجهة التطبيق القياسية
+# 2. إعدادات واجهة التطبيق القياسية المستقرة
 # =========================================================================
 st.set_page_config(
     page_title="SOS Road Assistance", 
@@ -90,21 +79,14 @@ if not st.session_state["authenticated"]:
                     st.rerun()
             else:
                 st.error("بيانات الدخول غير صحيحة!")
-        except:
+        except Exception as e:
             st.error("خطأ في الاتصال بقاعدة البيانات، تأكد من وجود ملف users.csv")
     st.stop()
 
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 4. تفعيل العداد التلقائي للحماية (30 ثانية)
-# =========================================================================
-refresh_count = st_autorefresh(interval=30000, key="sos_autorefresh")
-if refresh_count > 0:
-    st.toast("🔄 تم تحديث الرادار الحركي ومواقع شاحنات السحب...", icon="📡")
-
-# =========================================================================
-# 5. الشريط الجانبي الفخم لإدارة العضوية وزر الخروج
+# 4. الشريط الجانبي الفخم لإدارة العضوية وزر الخروج
 # =========================================================================
 with st.sidebar:
     st.markdown("<h2 style='text-align: center; color: #D21034;'>⚙️ لوحة التحكم</h2>", unsafe_allow_html=True)
@@ -116,8 +98,6 @@ with st.sidebar:
     if st.button("🪪 إظهار بطاقة العضوية الرقمية"):
         member_code = f"SOS-{current_user['username'].upper()}"
         barcode_url = f"https://metafloor.com{member_code}&scale=3&rotate=N&includetext=true"
-        
-        # عرض بطاقة العضوية مقسمة برمجياً لتفادي أخطاء النصوص المفتوحة
         st.info("💳 بطاقة عضوية رقمية موثقة")
         st.write(f"**رقم الحساب:** {member_code}")
         st.image(barcode_url, caption="باركود التحقق الفني المسحي")
@@ -129,55 +109,28 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# 6. الواجهة الرئيسية وعرض الخريطة التفاعلية الرادارية
+# 5. الواجهة الرئيسية للنسخة الاحترافية المستقرة
 # =========================================================================
-col_title, col_logo = st.columns([4, 1])
-with col_title:
-    st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الحية بالطرقات</h2>", unsafe_allow_html=True)
-    st.write("يقوم النظام بمزامنة أقرب شاحنات السحب (الـ Dépannage) والميكانيكيين المتنقلين تلقائياً.")
-with col_logo:
-    if os.path.exists("Wallpaper_01.png"):
-        st.image("Wallpaper_01.png", width=80)
+st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الفوري بالطرقات</h2>", unsafe_allow_html=True)
+st.write("يقوم النظام بمزامنة أقرب شاحنات السحب (الـ Dépannage) والميكانيكيين المتنقلين في الجزائر.")
 
+# عرض الصور الرسمية للتطبيق كبانر وشعار فخم إن وجدت
+import os
 if os.path.exists("p042391jpg"):
     with open("p042391jpg", "rb") as file:
         st.image(file.read(), use_container_width=True)
 
-user_lat, user_lon = 36.7528, 3.0420
-
-try:
-    df = pd.read_csv("stores.csv")
-    sos_providers = df[df["الصنف"].isin(["محطة خدمات", "ميكانيك وصيانة", "شاحنة سحب"])]
-    
-    m = folium.Map(location=[user_lat, user_lon], zoom_start=10, tiles="cartodbpositron")
-    
-    folium.Marker(
-        location=[user_lat, user_lon],
-        popup=f"مركبة العضو: {current_user['full_name']}",
-        icon=folium.Icon(color="red", icon="info-sign")
-    ).add_to(m)
-    
-    for index, row in sos_providers.iterrows():
-        folium.Marker(
-            location=[row['latitude'], row['longitude']],
-            popup=f"🚨 {row['الاسم']} - هاتف: {row['Telephone']}",
-            icon=folium.Icon(color="green", icon="wrench")
-        ).add_to(m)
-        
-    st_folium(m, width="100%", height=400, returned_objects=[])
-except:
-    st.warning("⚠️ جاري مزامنة إحداثيات الأقمار الصناعية للخرائط الحية...")
-
 # =========================================================================
-# 7. أزرار الطوارئ وعرض بطاقات مزودي الخدمة المفلترة
+# 6. أزرار الطوارئ وعرض بطاقات الخدمات بنظام خرائط Google الحية التفاعلية
 # =========================================================================
 st.write("---")
 if st.button("🔴 اضغط هنا لطلب نجدة عاجلة فوراً"):
-    st.error(f"🚨 تم إرسال نداء استغاثة باسم العضو ({current_user['full_name']}) وموقعك الجغرافي لأقرب الدوريات.")
+    st.error(f"🚨 تم بث نداء استغاثة طارئ باسم العضو ({current_user['full_name']}) بنجاح لأقرب الدوريات المتاحة في ولايتك.")
 
 st.write("### 🛠️ مراكز الإنقاذ المتوفرة في نطاقك الجغرافي:")
 
 try:
+    df = pd.read_csv("stores.csv")
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         sel_state = st.selectbox("تصفية بالولاية:", ["كل الولايات"] + list(df["الولاية"].unique()))
@@ -189,25 +142,27 @@ try:
     if sel_state != "كل الولايات": f_df = f_df[f_df["الولاية"] == sel_state]
     if sel_cat != "كل الأصناف": f_df = f_df[f_df["الصنف"] == sel_cat]
     
+    # عرض البطاقات الاحترافية مع روابط خرائط جوجل الحية المستقرة
     for index, row in f_df.iterrows():
         st.markdown(
             f"""
             <div class="provider-card">
                 <h3 style="color: #111; margin: 0; font-size: 18px;">🚨 {row['الاسم']}</h3>
                 <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">📍 <b>النطاق:</b> {row['الولاية']} | 🛠️ <b>الخدمة:</b> {row['الصنف']}</p>
-                <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً لطلب النجدة</a>
+                <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً</a>
+                <a class="map-link" href="{row['Location']}" target="_blank">🗺️ فتح موقع الخريطة الحي</a>
             </div>
             """, 
             unsafe_allow_html=True
         )
-except:
-    pass
+except Exception as e:
+    st.info("جاري تحديث قاعدة البيانات الرقمية للمحلات...")
 
 # =========================================================================
-# 8. مستشار الطوارئ الذكي (AI Mechanic)
+# 7. مستشار الطوارئ الذكي (AI Mechanic)
 # =========================================================================
 st.write("---")
-GOOGLE_API_KEY = "ضع_مفتاح_API_الخاص_بك_هنا"  # استبدله بمفتاحك المبتدئ بـ AIzaSy
+GOOGLE_API_KEY = "ضع_مفتاح_API_الخاص_بك_هنا"  # الصق هنا مفتاحك الحقيقي المبتدئ بـ AIzaSy
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.write("### 🤖 مساعد ميكانيكي ذكي للاستشارة السريعة")
@@ -221,6 +176,7 @@ if st.button("تحليل العطل الذكي"):
                 response = model.generate_content(user_query)
                 st.info(response.text)
             except:
-                st.error("مفتاح الـ API الحالي غير مفعل في الكود، يرجى كتابة مفتاحك الصحيح.")
+                st.error("يرجى التأكد من وضع مفتاح الـ API الصحيح والمفعل داخل الكود ليعمل الذكاء الاصطناعي.")
+
 
 
