@@ -142,21 +142,28 @@ try:
     if sel_state != "كل الولايات": f_df = f_df[f_df["الولاية"] == sel_state]
     if sel_cat != "كل الأصناف": f_df = f_df[f_df["الصنف"] == sel_cat]
     
-    # عرض البطاقات الاحترافية مع روابط خرائط جوجل الحية المستقرة
+       # عرض البطاقات الاحترافية مع خريطة تفاعلية مدمجة داخل الصفحة
     for index, row in f_df.iterrows():
+        # تحويل رابط الخريطة العادي إلى رابط دمج ذكي لخرائط جوجل
+        embed_map_url = str(row['Location']).replace("://google.com", "://google.com") + "&output=embed"
+        
         st.markdown(
             f"""
             <div class="provider-card">
                 <h3 style="color: #111; margin: 0; font-size: 18px;">🚨 {row['الاسم']}</h3>
                 <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">📍 <b>النطاق:</b> {row['الولاية']} | 🛠️ <b>الخدمة:</b> {row['الصنف']}</p>
-                <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً</a>
-                <a class="map-link" href="{row['Location']}" target="_blank">🗺️ فتح موقع الخريطة الحي</a>
+                <div style="margin-top: 10px;">
+                    <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً</a>
+                    <a class="map-link" href="{row['Location']}" target="_blank">📱 فتح في تطبيق الخرائط</a>
+                </div>
+                <!-- عرض الخريطة الحية مصغرة داخل بطاقة المحل مباشرة دون مغادرة التطبيق -->
+                <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid #ccc;">
+                    <iframe src="{embed_map_url}" width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
             </div>
             """, 
             unsafe_allow_html=True
         )
-except Exception as e:
-    st.info("جاري تحديث قاعدة البيانات الرقمية للمحلات...")
 
 # =========================================================================
 # 7. مستشار الطوارئ الذكي (AI Mechanic)
