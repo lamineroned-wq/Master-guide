@@ -91,23 +91,27 @@ if not st.session_state["authenticated"]:
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 3. إعداد العداد التلقائي (Auto-Refresh) كل 30 ثانية للنسخة الاحترافية
+# 3. إعدادات واجهة التطبيق الاحترافية (تحديث: الأيقونة الرسمية SOS + الاسم)
 # =========================================================================
-refresh_count = st_autorefresh(interval=30000, key="sos_autorefresh")
-if refresh_count > 0:
-    st.toast("🔄 تم تحديث الرادار الحركي ومواقع شاحنات السحب...", icon="📡")
+# وضَعنا أيقونة سيارة الإسعاف/الطوارئ الرسمية 🚨 لتظهر في أعلى علامة تبويب المتصفح لدى الزبون
+st.set_page_config(
+    page_title="SOS Road Assistance", 
+    page_icon="🚨", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # =========================================================================
-# 4. الشريط الجانبي (Sidebar) لإدارة العضوية والبطاقة الذكية
+# 4. الشريط الجانبي الفخم (Sidebar) لإدارة الحساب وزر تسجيل الخروج
 # =========================================================================
 with st.sidebar:
-    st.markdown(f"### 👤 الملف الشخصي")
-    st.write(f"**العضو:** {current_user['full_name']}")
-    st.write(f"**المركبة:** {current_user['car_type']}")
-    st.write(f"**نهاية التغطية:** {current_user['expiry_date']}")
+    st.markdown("<h2 style='text-align: center; color: #D21034;'>⚙️ لوحة التحكم</h2>", unsafe_allow_html=True)
+    st.write(f"**👤 العضو الحركي:** {current_user['full_name']}")
+    st.write(f"**🚗 المركبة الموثقة:** {current_user['car_type']}")
+    st.write(f"**📅 نهاية التغطية:** {current_user['expiry_date']}")
     st.write("---")
     
-    # ميزة استخراج بطاقة العضوية الإلكترونية داخل الشريط الجانبي الفخم
+    # ميزة استخراج بطاقة العضوية الإلكترونية داخل الشريط الجانبي
     if st.button("🪪 إظهار بطاقة العضوية الرقمية"):
         member_code = f"SOS-{current_user['username'].upper()}"
         barcode_url = f"https://metafloor.com{member_code}&scale=3&rotate=N&includetext=true"
@@ -124,6 +128,15 @@ with st.sidebar:
             """,
             unsafe_allow_html=True
         )
+    
+    st.write("---")
+    # ميزة زر تسجيل الخروج الآمن لحماية الحساب من البقاء مفتوحاً
+    if st.button("🚪 تسجيل الخروج من النظام"):
+        st.session_state["authenticated"] = False
+        st.session_state["user_data"] = {}
+        st.toast("تم تسجيل الخروج بنجاح. رافقتكم السلامة!", icon="🔒")
+        st.rerun()
+
 
 # =========================================================================
 # 5. الواجهة الرئيسية: خريطة التتبع الرادارية الكبرى (SOS Map)
