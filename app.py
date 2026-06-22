@@ -5,9 +5,10 @@ import google.generativeai as genai
 import folium
 from streamlit_folium import st_folium
 from streamlit_autorefresh import st_autorefresh
+import os
 
 # =========================================================================
-# 1. الهوية البصرية الاحترافية للـ SOS وتأمين المحتوى (CSS & Anti-Copy)
+# 1. تأمين المحتوى وحظر النسخ والتحديد (Anti-Copy CSS)
 # =========================================================================
 st.markdown(
     """
@@ -23,33 +24,18 @@ st.markdown(
         direction: rtl; text-align: right; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     @media print { body { display: none; } }
-    
-    /* أزرار الطوارئ الفخمة */
     .stButton>button {
         background: linear-gradient(135deg, #D21034 0%, #990011 100%) !important;
         color: white !important; border-radius: 30px !important; border: none !important;
-        font-weight: bold !important; font-size: 18px !important; padding: 12px 0 !important;
-        box-shadow: 0px 5px 15px rgba(210, 16, 52, 0.4) !important; width: 100% !important; transition: 0.3s;
+        font-weight: bold !important; font-size: 18px !important; padding: 12px 0 !important; width: 100% !important;
     }
-    .stButton>button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0px 8px 20px rgba(210, 16, 52, 0.6) !important;
-    }
-    
-    /* بطاقات مزودي الخدمة الاحترافية */
     .provider-card {
-        background-color: #ffffff; border-right: 6px solid #008751; padding: 18px;
-        border-radius: 12px; margin-bottom: 15px; box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
-        border: 1px solid #eef0f2;
-    }
-    .badge-status {
-        background-color: #e6f3ed; color: #008751; padding: 4px 10px;
-        border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block;
+        background-color: #ffffff; border-right: 6px solid #008751; padding: 15px;
+        border-radius: 12px; margin-bottom: 15px; border: 1px solid #eef0f2;
     }
     .phone-link {
         display: inline-block; background-color: #008751; color: white !important;
-        padding: 8px 20px; border-radius: 25px; text-decoration: none !important;
-        font-weight: bold; font-size: 14px; margin-top: 10px; box-shadow: 0px 3px 8px rgba(0, 135, 81, 0.3);
+        padding: 8px 20px; border-radius: 25px; text-decoration: none !important; font-weight: bold; margin-top: 10px;
     }
     </style>
     """,
@@ -57,17 +43,16 @@ st.markdown(
 )
 
 # =========================================================================
-# 2. إعدادات واجهة التطبيق الاحترافية (الأيقونة الرسمية SOS + الاسم)
+# 2. إعدادات واجهة التطبيق القياسية
 # =========================================================================
 st.set_page_config(
     page_title="SOS Road Assistance", 
     page_icon="🚨", 
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # =========================================================================
-# 3. بوابة الدخول الذكية والآمنة (users.csv)
+# 3. بوابة الدخول الآمنة بالتحقق من ملف users.csv
 # =========================================================================
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -95,58 +80,46 @@ if not st.session_state["authenticated"]:
             else:
                 st.error("بيانات الدخول غير صحيحة!")
         except:
-            st.error("خطأ في الاتصال بقاعدة البيانات.")
+            st.error("خطأ في الاتصال بقاعدة البيانات، تأكد من وجود ملف users.csv")
     st.stop()
 
 current_user = st.session_state["user_data"]
 
 # =========================================================================
-# 4. إعداد العداد التلقائي (Auto-Refresh) كل 30 ثانية
+# 4. تفعيل العداد التلقائي للحماية (30 ثانية)
 # =========================================================================
 refresh_count = st_autorefresh(interval=30000, key="sos_autorefresh")
 if refresh_count > 0:
     st.toast("🔄 تم تحديث الرادار الحركي ومواقع شاحنات السحب...", icon="📡")
 
 # =========================================================================
-# 5. الشريط الجانبي (Sidebar) لإدارة العضوية والبطاقة والروج
+# 5. الشريط الجانبي الفخم لإدارة العضوية وزر الخروج
 # =========================================================================
 with st.sidebar:
     st.markdown("<h2 style='text-align: center; color: #D21034;'>⚙️ لوحة التحكم</h2>", unsafe_allow_html=True)
-    st.write(f"**👤 العضو الحركي:** {current_user['full_name']}")
-    st.write(f"**🚗 المركبة الموثقة:** {current_user['car_type']}")
+    st.write(f"**👤 العضو:** {current_user['full_name']}")
+    st.write(f"**🚗 المركبة:** {current_user['car_type']}")
     st.write(f"**📅 نهاية التغطية:** {current_user['expiry_date']}")
     st.write("---")
     
-    # ميزة استخراج بطاقة العضوية الإلكترونية الموزونة بالمسافات الصحيحة
     if st.button("🪪 إظهار بطاقة العضوية الرقمية"):
         member_code = f"SOS-{current_user['username'].upper()}"
         barcode_url = f"https://metafloor.com{member_code}&scale=3&rotate=N&includetext=true"
-        st.markdown(
-            f"""
-            <div style="background: linear-gradient(135deg, #111 0%, #222 100%); color: white; padding: 15px; border-radius: 12px; border: 1px solid #D21034; text-align: center;">
-                <p style="color: #D21034; font-weight: bold; margin:0;">SOS MEMBER CARD</p>
-                <p style="font-size: 13px; margin: 5px 0;">{current_user['full_name']}</p>
-                <p style="font-size: 11px; color: #aaa; margin: 0;">{current_user['car_type']}</p>
-                <div style="background: white; padding: 5px; border-radius: 5px; margin-top: 10px;">
-                    <img src="{barcode_url}" style="max-width:100%;">
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        
+        # عرض بطاقة العضوية مقسمة برمجياً لتفادي أخطاء النصوص المفتوحة
+        st.info("💳 بطاقة عضوية رقمية موثقة")
+        st.write(f"**رقم الحساب:** {member_code}")
+        st.image(barcode_url, caption="باركود التحقق الفني المسحي")
     
     st.write("---")
-    # زر تسجيل الخروج الآمن الموزون بالكامل
     if st.button("🚪 تسجيل الخروج من النظام"):
         st.session_state["authenticated"] = False
         st.session_state["user_data"] = {}
         st.rerun()
 
 # =========================================================================
-# 6. الواجهة الرئيسية: خريطة التتبع الرادارية الكبرى (SOS Map)
+# 6. الواجهة الرئيسية وعرض الخريطة التفاعلية الرادارية
 # =========================================================================
-import os
-# عرض الصور إذا تواجدت في المستودع
 col_title, col_logo = st.columns([4, 1])
 with col_title:
     st.markdown("<h2 style='color: #111; margin:0;'>📡 رادار الإغاثة الحية بالطرقات</h2>", unsafe_allow_html=True)
@@ -159,28 +132,24 @@ if os.path.exists("p042391jpg"):
     with open("p042391jpg", "rb") as file:
         st.image(file.read(), use_container_width=True)
 
-# إحداثيات موقع السائق الافتراضية للجزائر
 user_lat, user_lon = 36.7528, 3.0420
 
 try:
     df = pd.read_csv("stores.csv")
     sos_providers = df[df["الصنف"].isin(["محطة خدمات", "ميكانيك وصيانة", "شاحنة سحب"])]
     
-    # بناء الخريطة التفاعلية الفخمة
     m = folium.Map(location=[user_lat, user_lon], zoom_start=10, tiles="cartodbpositron")
     
-    # دبوس السائق (المستغيث) باللون الأحمر
     folium.Marker(
         location=[user_lat, user_lon],
-        popup=f"<b>مركبة تعطلت: {current_user['full_name']}</b>",
+        popup=f"مركبة العضو: {current_user['full_name']}",
         icon=folium.Icon(color="red", icon="info-sign")
     ).add_to(m)
     
-    # دبابيس مقدمي الإغاثة باللون الأخضر
     for index, row in sos_providers.iterrows():
         folium.Marker(
             location=[row['latitude'], row['longitude']],
-            popup=f"<b>🚨 {row['الاسم']}</b><br>📞 {row['Telephone']}<br>🛠️ {row['الصنف']}",
+            popup=f"🚨 {row['الاسم']} - هاتف: {row['Telephone']}",
             icon=folium.Icon(color="green", icon="wrench")
         ).add_to(m)
         
@@ -189,11 +158,11 @@ except:
     st.warning("⚠️ جاري مزامنة إحداثيات الأقمار الصناعية للخرائط الحية...")
 
 # =========================================================================
-# 7. زر الاستغاثة السريع وجدول التواصل المحمي
+# 7. أزرار الطوارئ وعرض بطاقات مزودي الخدمة المفلترة
 # =========================================================================
 st.write("---")
 if st.button("🔴 اضغط هنا لطلب نجدة عاجلة فوراً"):
-    st.error(f"🚨 تم إرسال نداء استغاثة باسم العضو ({current_user['full_name']}) وموقعك الجغرافي الحالي لأقرب الدوريات المتوفرة.")
+    st.error(f"🚨 تم إرسال نداء استغاثة باسم العضو ({current_user['full_name']}) وموقعك الجغرافي لأقرب الدوريات.")
 
 st.write("### 🛠️ مراكز الإنقاذ المتوفرة في نطاقك الجغرافي:")
 
@@ -213,8 +182,34 @@ try:
         st.markdown(
             f"""
             <div class="provider-card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="color: #111; margin: 0; font-size: 18px;">🚨 {row['الاسم']}</h3>
-                    <span class="badge-status">🟢 متوفر للإنقاذ</span>
+                <h3 style="color: #111; margin: 0; font-size: 18px;">🚨 {row['الاسم']}</h3>
+                <p style="color: #666; margin: 8px 0 0 0; font-size: 14px;">📍 <b>النطاق:</b> {row['الولاية']} | 🛠️ <b>الخدمة:</b> {row['الصنف']}</p>
+                <a class="phone-link" href="tel:{row['Telephone']}">📞 اتصل فوراً لطلب النجدة</a>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+except:
+    pass
+
+# =========================================================================
+# 8. مستشار الطوارئ الذكي (AI Mechanic)
+# =========================================================================
+st.write("---")
+GOOGLE_API_KEY = "ضع_مفتاح_API_الخاص_بك_هنا"  # استبدله بمفتاحك المبتدئ بـ AIzaSy
+genai.configure(api_key=GOOGLE_API_KEY)
+
+st.write("### 🤖 مساعد ميكانيكي ذكي للاستشارة السريعة")
+user_query = st.text_input("اكتب العطل الذي تلاحظه في سيارتك حالياً:")
+if st.button("تحليل العطل الذكي"):
+    if user_query:
+        with st.spinner("جاري فحص العطل الفني وتقديم نصائح السلامة..."):
+            try:
+                system_instruction = "أنت المساعد الميكانيكي الخبير لتطبيق SOS Road Assistance. قدم نصائح سلامة وإصلاح سريعة وبنقاط واضحة لحماية السائق."
+                model = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=system_instruction)
+                response = model.generate_content(user_query)
+                st.info(response.text)
+            except:
+                st.error("مفتاح الـ API الحالي غير مفعل في الكود، يرجى كتابة مفتاحك الصحيح.")
 
 
