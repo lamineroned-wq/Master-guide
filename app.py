@@ -104,10 +104,15 @@ try:
     if not f_df.empty:
         # تجهيز البيانات بصيغة جدولية تفهمها الخريطة الأصلية للمنصة
         # الكود يبحث عن عمودي latitude و longitude في ملف stores.csv ويرسمهما فوراً
-        map_data = pd.DataFrame({
-            'latitude': f_df['latitude'],
-            'longitude': f_df['longitude']
-        })
+       # تحويل الإحداثيات إلى أرقام عشرية حية لمنع تجمد الخريطة
+lat_clean = pd.to_numeric(f_df['latitude'], errors='coerce')
+lon_clean = pd.to_numeric(f_df['longitude'], errors='coerce')
+
+map_data = pd.DataFrame({
+    'latitude': lat_clean,
+    'longitude': lon_clean
+}).dropna() # مسح أي قيم خاطئة تلقائياً
+
         
         # عرض الخريطة الأصلية المباشرة والمحمية التي تملأ الشاشة بنجاح
         st.map(map_data, zoom=10, use_container_width=True)
