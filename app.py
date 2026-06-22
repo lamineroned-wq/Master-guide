@@ -1,3 +1,14 @@
+# حقن تثبيت ميكانيكي للمكتبات لتخطي خطأ السيرفر
+import subprocess
+import sys
+
+try:
+    import folium
+    import streamlit_folium
+    import streamlit_autorefresh
+except ModuleNotFoundError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "folium", "streamlit-folium", "streamlit-autorefresh"])
+
 import streamlit as st
 import datetime
 import pandas as pd
