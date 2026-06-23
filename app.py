@@ -133,7 +133,7 @@ except Exception as e:
 # 5. مستشار الطوارئ الفني (AI Mechanic)
 # =========================================================================
 st.write("---")
-GOOGLE_API_KEY = "ضع_مفتاح_API_الخاص_بك_هنا"  # ضع مفتاح الـ API الحقيقي هنا ليعمل المستشار الذكي
+GOOGLE_API_KEY = "AQ.Ab8RN6LwJUfvk4EZFGDbEReFGg6Iok2jbomfvMDwZvcBJatDsw"  # ضع مفتاح الـ API الحقيقي هنا ليعمل المستشار الذكي
 genai.configure(api_key=GOOGLE_API_KEY)
 
 st.write("### 🤖 مساعد ميكانيكي ذكي للاستشارة السريعة على الطريق")
